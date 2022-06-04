@@ -1,0 +1,217 @@
+unit LGPD.Helpers;
+
+interface
+  uses
+    System.SysUtils;
+
+  function Encrypt(AValor: string): String;
+  function Decrypt(AValor: string): String;
+
+function EncryptStr(const S :WideString; Key: Word): String;
+function DecryptStr(const S: String; Key: Word): String;
+
+
+implementation
+
+const CKEY1 = 53761;
+      CKEY2 = 32618;
+
+function EncryptStr(const S :WideString; Key: Word): String;
+var   i          :Integer;
+      RStr       :RawByteString;
+      RStrB      :TBytes Absolute RStr;
+begin
+  Result:= '';
+  RStr:= UTF8Encode(S);
+  for i := 0 to Length(RStr)-1 do begin
+    RStrB[i] := RStrB[i] xor (Key shr 8);
+    Key := (RStrB[i] + Key) * CKEY1 + CKEY2;
+  end;
+  for i := 0 to Length(RStr)-1 do begin
+    Result:= Result + IntToHex(RStrB[i], 2);
+  end;
+end;
+
+function DecryptStr(const S: String; Key: Word): String;
+var   i, tmpKey  :Integer;
+      RStr       :RawByteString;
+      RStrB      :TBytes Absolute RStr;
+      tmpStr     :string;
+begin
+  tmpStr:= UpperCase(S);
+  SetLength(RStr, Length(tmpStr) div 2);
+  i:= 1;
+  try
+    while (i < Length(tmpStr)) do begin
+      RStrB[i div 2]:= StrToInt('$' + tmpStr[i] + tmpStr[i+1]);
+      Inc(i, 2);
+    end;
+  except
+    Result:= '';
+    Exit;
+  end;
+  for i := 0 to Length(RStr)-1 do begin
+    tmpKey:= RStrB[i];
+    RStrB[i] := RStrB[i] xor (Key shr 8);
+    Key := (tmpKey + Key) * CKEY1 + CKEY2;
+  end;
+  Result:= UTF8Decode(RStr);
+end;
+
+const
+  CRIPTY : Array[1..10]  of String = ( 'K ÕRBEVHJC4ÍÎLMÛÃZXÀT.7IÈÒÙÂÓG1D-O0:SPÚÁQ\6ÔFÉY3U&ÇWÊÌ/5829AN',
+                                       'OSÍFR6ÂX ATÎMÙ8LEÛYZGÈUIÌCÚP5DÃ37ÕÇÉ:0ÒJÓ1BÁ\H&/9KNÀ-Ê.Q2W4VÔ',
+                                       'G ÈÃH&CÇ:R47QAÔIVF8JÒ6É-Î2XLÀK50SÌ9.Û/3NÊOBPÓM1TD\UÚWZÙÂÕÁEÍY',
+                                       '6ÎÊ0&:M8ÚÔBHÍ5ÈPJZÒ.4ÁÕWÛ ÂYEOQGS3V9NTÃÉKIC/1FÌ\A7RLÀ2D-ÇXÓÙU',
+                                       'UÛLPH5Ê/3 N&QKW7OÓDÎFGIAXÃTM0ZÇ21ÁÀVEJ9Õ-Ú8.C4Í:ÔÙ\ÈYÂS6ÉÌBÒR',
+                                       'Ù.ÉÛXÇA3D9ÕÚCQÊ-TJNKL7/ÂY6Ò8Î0GFÍO&Ì5SU:1VBRÓZ Ã2ÈW4HPI\ÔMEÀÁ',
+                                       'ÓÎÀH.ÙNÇÂ:S 5VACÌ2D\F37ÊW/JÔ0ÕZ9OÈÍQÁ&RK-EI4Ò1TY8Ã6ÛBÉÚXGLMPU',
+                                       'P5Õ9JG-HÒKÙVÚÛ3:ÓUDÂIÈ1\S.À4E/OWB07LCNÊÃ&ÍY286MXÉÔQÁT ÎFAÌZÇR',
+                                       'ÀVJÔ9ÓX&KÇÎ-O:YÁCMSÚDTFÃÈ8R1/6ÛÌ.3NI0AB QÙEUÂ74WHÍ5ÒLÊ\PZGÉÕ2',
+                                       'ZÓ6Ô1OÌRÂLC3EAÇÙÎ-ÉÍÊ8P0Ã&QÒ2À94XS7ÕGNW\BIÛÁK /DÚ:VFTMÈJU.5YH');
+
+  CRIPTY_KEYS : Array[1..61]  of String = ('?-5t$à1y@Â8pu=Oã]}#\Ík:6eÇ¢>!DVnêZ{<_Éjrbôú~/çf9wóÕAá&+£0[*S2',
+                                           '_Váy}0@ô<t6uÕ9$Âb5\#&w+An{f!2£-keúpDS]j8~ãÍ?O>[çÇà1É=:*ró/¢Zê',
+                                           'úZ£Ç2b={6n@Õp$*j>!¢r0\ãÂtu8+Vá&óy<:eA/Í9?w1]àDfê_-#Sô~}Oç[k5É',
+                                           ':0>uy]ÕúÍ&n=Çwà6jÂO$<#á-Zb1?!A[çãSk¢5É~£}ô\/p_óf{2+eê89*@DtrV',
+                                           'úÕ=?Z~r#y&Í\n<91]65u*$ã¢0ô@Sókfê!/[AçÇ2à8{:>£áÂDp+wÉ}Vte-b_jO',
+                                           'É]Íw2yó0<+ô6=uf@$-\DÇ[~jSá¢!/à8A1#ê&5£ç:rã9úbV?*O>Õk_p{ZnÂte}',
+                                           '>j\óf8-êk60~!wuç1:Ée/Sôp]út}*ÂÍÇZ<à9_?ÕA¢{5O[ry=á+Vn£b2@&D$ã#',
+                                           '910fOçóã¢Éb:ôÍ-y£?~e<$ê[>8SÂÇú5\=AÕpàj2!+&á#rD]w@6{u_kZV}*t/n',
+                                           'ZS2y£nà¢ãôr>$[56ú@?\9_{Í:/ÉAÂD=~1kç]áÇ&eê+#O}f<b-8!jtw0óuVÕp*',
+                                           'ôptç[f+n1Ze:9*~S&{O-ÇVjÉÂà$A_2w¢Õ#<uky}ú5?0bÍD]áã\=>r£6/8ó!ê@',
+                                           '&ÕS@k9ã+á/ç-Íb:$¢É=}*<Â?_5{0êA81njófyO[e~ú#Dr]VàÇZ2£tp\6w>u!ô',
+                                           'ó&#úZ}áÇ$1?OÉ!ÍÕÂk@-{>ç2r=àj*8wf~_D0nySAbê[p6¢/u9V:]ôt£e+ã5\<',
+                                           '{<w=¢à\ôpk~Â£áyb}j8tDfOe59*n>AÕóã2úZÇçu+Ér:1#@/Sê&]$_Í[6?!V-0',
+                                           '2-jV5@eÇ8/~Z]&Í*+¢£A?\!bS_9{t}ó=Õ$ú:k#wuOá6ÉDô>ç10y[ênãpÂfr<à',
+                                           '$¢pà~8áÕVã+OnóuAf\b<DwÂ]?ç>£/_yjS&r!5t}*21ê:ú90eÉ=k#Í-[ô6ZÇ{@',
+                                           'Õnjàtk:]{wú910*$-/O¢@5DÍ>[eç6!+}uAôfpÇó<&£\b2ZÉáVãÂyr8S~_=#?ê',
+                                           'tôÂDnÉ20p+Õ$19rf-úbZ<£#@!{]?}yOe~çAák[Íàóã_*:V¢/u=S>w65Çêj&\8',
+                                           '1~jwàÍ[ô06/_á?>+&$£Z:{ÇDÕr<ep=çf8}óOê@Énã9u5A\2tV*!Sy¢Âbk-ú]#',
+                                           't+ú¢ôÂ*19:p5&Okó$fySbêÕuVr/Í<-á!D]_£çe2nã@AÉ>à\w{}=[Ç~8?#6jZ0',
+                                           'êp@}>ó<{+2S&ÇáÉ1DtÂbjf£Z!yô_~90Í[\¢nV]5r=ãà$Okú68?A:-Õuew/ç#*',
+                                           'wóSp}A#Vçàj?ebô6D<y:&k*ên59!0fÕt1O¢=]ÉÇ£$2Z8+Í@áã>r/{Â[~uú-\_',
+                                           '09£ty>wà2-]{jV!ÍãÂ6/pôrD=\8bu5+#êá:_&<ó*SekÇ$~ÕÉZ@1ú?[OnA}¢fç',
+                                           'A=~_¢ãr]tyú?O>/êÂ86}#b2&Çp*jZ<á\ó15:SçeDÕ!Vuknà0wôÉ9$-£f+Í@{[',
+                                           'ç~pt\/ú6=S}!0br-A:#ôVk_<&{*2j£>Íá?yeÇ¢u5@ÉÕO+wê$ó19Âànã8ZDf[]',
+                                           'reDpàô/\jã<tóZ!Í@£V¢k$+Â:*52f[{OÉ0u6?-#êç_}~Õ]Çwy&n89>áb1SA=ú',
+                                           'É>&Ç2:@DeôZV[\*-O{Súç=5}_êknày£#w0]r¢p9ÂuófbÍAã<1/+át8!6$~?Õj',
+                                           'r/*t!ÉÇA-V£>Sç0@¢[5j{ÍÕe<&_$ó2+wàf:=ZnákDôú~#y698Â1êO\]ubpã?}',
+                                           '/$ô]=6&j8*êe?y{!ÇZ0Ok5[çÂ¢-<Étá9uV@:}~>àó+SúfãÕDÍ\A2w1pb#r_£n',
+                                           '}Sáyç[b?5:Vêp¢/]ãn@Ç_u9Í£&12Õ-ú!8à+jO~Z6\$frt*#<=óAwDôe>{ÉÂ0k',
+                                           'b¢Í0!</]j&ÉruV_£5wápSÕ6tf19ú8+}D$-OênA\>Çk?{@ç=ôÂó#ày[eã~2:*Z',
+                                           '=£jf5b-ZrÉp~n+Çt/çSá:?eúÍuO$A8_wô*¢Â9<ãDó#]ê[kà6y&>VÕ2!1\}{0@',
+                                           'uS#_É¢ô\{óê/w+*1$90j£á&-y?5@nf]çO:=DúÂrb~ZAÇ2t>pã6[8kÕ!eVàÍ<}',
+                                           '<>ÍbZV8~_wOà[?renAuk=py#5}á!6jÇêÉ@fD9ô¢]2ó/{0+*$1\:ÕçÂút£-S&ã',
+                                           'Ç~p=$àS_>0êt<ÂÉô9/*{][}:Í\ã-kf81n+?VZrá#¢£yODjAuú!óçÕ5b&2@ew6',
+                                           'rVS{ç9f@w=Ç<&ÍÉpDj*}úb1:A]ê/2?~á$[0ónã_Õ-Ây\k5+!ZOe£¢6tà>ô8u#',
+                                           '_+&#Dç[!ÇZV~Sêw15<Õ:Í*-O6=p\9yá?à2>btã/$kÂ{]ôÉ0¢f£ójA}8úr@uen',
+                                           'ã}D\ô*&yÍÕ]Ét<1=5~:-Ç#[n_8r?>{+wA¢ç2eVuÂ/Obêpá£à6ó0k$Z9új@!fS',
+                                           '-?úÂàt]ã=9ÉDy¢Í<çêôb+\@2#>6O&áÇA£p/VS5k1[ÕZ0nrj8*w~}:{e!_$ófu',
+                                           '2@ê9tybúÉ-5_Í1[=pókSOZ&{n0w~!¢$\e<ãÇ*r>àÂj]uA86:£á?#}D/çVfÕô+',
+                                           '?VOrbÇ$0ÕD-ú&j/çkáeS!¢Í#6t1~{ê<ô*£f@[Aw9:n5_+}\yÉã]óZà8Â2u>p=',
+                                           'àOáDã{fê#[}-y!SZtôpeó+n9]V¢=Â*AÇbu:_5\1$&j~Õ>2rkÉ/úw0<@ç£Í?68',
+                                           '~çóàã91y!=rkO:#Â<bÇD_ô2êtuej}[Õá{\>p+8S$*/¢@5É60wZ&£VA]-?Ínfú',
+                                           '<ã*à\?0eÍ/n:rÕ>£D}jê5p!Ç91&Vó6Ob2tuô{=Z$A#Â]á@-fw+¢Syk[_É~8úç',
+                                           'çtybf-Se>$/:V#!Z9à[juÕúáDwk\ÉÇpã6£}Íó*{<]0_¢=+@~n&2r15ôÂ?8OAê',
+                                           '£0ó{f}uk~6yçt+]É:=?ô\8[SZp@n!V5êÇ_91AÂ2rj/>$ú#ãá<àw¢&OebDÍÕ*-',
+                                           '5reã=_Éàá-A*#têD@n:Ç{¢£Õ?Ou8Âó1/+<Vfk0Sj9çy!ô>&b\Z}]~w62$Í[pú',
+                                           'w#]u:ôD$@e1Í&/£j9ófS{r¢!Âk2nãAVbÕ6_t?=Çêp[Z~>çy5à}+-*0á<OÉ\ú8',
+                                           'ÉêZf-OÕ@61]Ç#k*úV~?/9\Í8uç52bA&>{ô+à$Â=ã}ryáp£_Sn¢[:tó!<ewDj0',
+                                           '~à9:ãwD6nç?[tÕ*ê@VA<r2/Íúu>Z£5ÂO+f#1$]-S{ôó&e0páybj=}8!kÉ_¢\Ç',
+                                           'ÕV~@{$!&jú+Oà:1#áã8A?t<Â9kS}6Zf]nóp0r-/_Dç¢ô£Ç>25*uwb=e[ÍyÉ\ê',
+                                           '-+A[n6ô/p_@óZ$O{f8çyÂ&uà<É5D>£úS~!ê\#eã2:r=wÍÕÇbá}j*V]¢109?kt',
+                                           'áÉÂ#!:?Çj=\ô[e]àZ+$êw6bÍSãn2~úf}kÕy/8<O-@&ó>1*90_çDr{uV5t£pA¢',
+                                           'weDb$[f-ç!pÉÂ\8=}<àêÍSô*#&¢?2:]V1>Ç/Oá_Zn~j6AÕã5ú£y{+9rk@ó0tu',
+                                           'rj25êà/Ç$}áwt]yçu6£ÂÕVb8n¢?De:óô_*Ék{+=90!\>-Oúp<A[ZSf@1Íã~#&',
+                                           '9óáãàÕ/8u#ôtOApç~Z2úSkwfn1V?e>+¢=6ê_Í[*Â@r5-jb{]Ç<&!£Dy0}:É\$',
+                                           '6tÂD:jÍ*<8}ZçfyôÕàÉkw59ó¢/AeV0~p@1á>!úSã{-ê£#?n&=\u[$Ç]O+r_2b',
+                                           'çÕã-+n}ZV{:61S&eDÍ@<uô[kóÂ¢p£\ywá>_?Ç~ê]!#É05Atjà8r2=$b9úfO/*',
+                                           '<ã@$\Ç&SZôenk~/:pjó[Írç#?Õ>2w¢uÂOb0á8ê5*=£VtA{É]9f}+_!61ú-àDy',
+                                           'çVS:+\nã6ujy{$ê£Ç-0=ôú¢kÍà98*2tÉZ}/ó!Õ5Oáe><b1p[#~A@]wrÂfD&_?',
+                                           ':1e]w{8!¢6áf5n@ó?r_çp\ú&Oôyàã+>D}jZ9-V/<#ÉtbS~£êÍ*$u20kÕÇ=AÂ[',
+                                           '8k2>+rS1jZôãÂ:únV?¢u=ÕÍ_{Çf\9-êbçO0É~6pt}yá]$£5@óD<e/w[#!àA*&');
+
+  RANDOM_NUMBERS : Array[1..110] of Integer = (05, 24, 25, 08, 59, 53, 102, 07, 58, 09, 10, 60, 31,
+                                               01, 43,  106, 44, 02, 03, 32, 33, 13, 14, 34, 35, 40,
+                                               45, 109, 46, 77, 78, 103, 79, 80, 81, 85, 41, 42, 36,
+                                               86, 61, 101, 48, 26, 27, 63, 64, 74, 75, 76, 65, 18,
+                                               87, 88, 110, 89, 50, 96, 97, 98, 20, 04, 11, 12, 82,
+                                               19, 99, 21, 47, 62, 104, 49, 95, 51, 90, 91, 92, 93,
+                                               94, 52, 57, 22, 06, 54, 55, 56, 23, 28, 107, 29, 30,
+                                               83, 84, 15, 16, 17, 105, 67, 68, 69, 37, 38, 66, 70,
+                                               39, 71, 108, 72, 73, 100);
+
+
+function Encrypt(AValor: string): String;
+var
+  FIdent,
+  FIndex,
+  FIndexChange : Integer;
+  FString,
+  FChar: string;
+
+  function StrRandom(AText: string): string;
+  var
+    FIndex : integer;
+  begin
+    Result := '';
+    AText := AText + StringOfChar(' ', (110 - Length(AText)));
+    for FIndex := 1 to Length(AText) do
+      Result := Result + AText[(RANDOM_NUMBERS[FIndex])];
+  end;
+begin
+  FString := '';
+  Randomize;
+  FIndexChange := Trunc(Random(60)) + 1;
+  for FIndex := 1 to Length(AValor) do
+  begin
+     FIdent     := StrtoInt(Copy(FormatFloat('000', FIndex), 3, 1));
+     if FIdent = 0 then FIdent := 10;
+     FChar := Copy(CRIPTY_KEYS[FIndexChange], Pos(AValor[FIndex], Cripty[FIdent]), 1);
+     FString := FString + FChar;
+  end;
+  Result := StrRandom(FormatFloat('00', FIndexChange) + FString);
+end;
+
+function Decrypt(AValor: string): String;
+var
+  FIndex,
+  FIdent,
+  FIndexChange : Integer;
+  FChar,
+  FString,
+  FValue: string;
+
+  function StrUnRandom(AText: string): string;
+  var
+    FIndex,
+    FIndex2 : integer;
+    FText : array[1..110] of String;
+  begin
+    for FIndex := 1 to 110 do
+      FText[(RANDOM_NUMBERS[FIndex])] := AText[FIndex];
+
+    Result := '';
+
+    for FIndex2 := 1 to 110 do
+      if FText[FIndex2] <> ' ' then
+        Result := Result + FText[FIndex2];
+
+    Result := Trim(Result);
+  end;
+begin
+  FValue    := StrUnRandom(AValor);
+  FIndexChange := StrtoInt(Copy(FValue, 1, 2));
+  FValue := Copy(FValue, 3, (Length(FValue) - 2));
+  for FIndex := 1 to Length(FValue) do
+  begin
+    FIdent   := StrtoInt(Copy(FormatFloat('000', FIndex), 3, 1));
+    if FIdent = 0 then FIdent := 10;
+      FChar := Copy(Cripty[FIdent], Pos(FValue[FIndex], CRIPTY_KEYS[FIndexChange]), 1);
+    FString := FString + FChar;
+  end;
+  Result := FString;
+end;
+
+end.

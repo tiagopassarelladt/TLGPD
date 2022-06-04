@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{89D5DF76-0BEC-4210-AEAD-C3E54C23A662}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="i9LGPD.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Exemplo\ExemploLGPD.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\TLGPDTermo\LGPDTermo.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="i9LGPD">
+        <MSBuild Projects="i9LGPD.dproj"/>
+    </Target>
+    <Target Name="i9LGPD:Clean">
+        <MSBuild Projects="i9LGPD.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="i9LGPD:Make">
+        <MSBuild Projects="i9LGPD.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ExemploLGPD">
+        <MSBuild Projects="Exemplo\ExemploLGPD.dproj"/>
+    </Target>
+    <Target Name="ExemploLGPD:Clean">
+        <MSBuild Projects="Exemplo\ExemploLGPD.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ExemploLGPD:Make">
+        <MSBuild Projects="Exemplo\ExemploLGPD.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="LGPDTermo">
+        <MSBuild Projects="..\TLGPDTermo\LGPDTermo.dproj"/>
+    </Target>
+    <Target Name="LGPDTermo:Clean">
+        <MSBuild Projects="..\TLGPDTermo\LGPDTermo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="LGPDTermo:Make">
+        <MSBuild Projects="..\TLGPDTermo\LGPDTermo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="i9LGPD;ExemploLGPD;LGPDTermo"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="i9LGPD:Clean;ExemploLGPD:Clean;LGPDTermo:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="i9LGPD:Make;ExemploLGPD:Make;LGPDTermo:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
